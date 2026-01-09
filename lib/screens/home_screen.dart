@@ -1,6 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:toonflix/models/webtoon_model.dart';
+import 'package:toonflix/services/api_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,126 +10,35 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const twendtyFiveMinutes = 1500;
-  int totalSeconds = twendtyFiveMinutes;
-  bool isRunning = false;
-  int totalPomodors = 0;
-  late Timer timer;
+  List<WebtoonModel> webtoons = [];
+  bool isLoading = true;
 
-  void onTick(Timer timer) {
-    if (totalSeconds == 0) {
-      timer.cancel();
-      setState(() {
-        totalPomodors = totalPomodors + 1;
-        isRunning = false;
-        totalSeconds = twendtyFiveMinutes;
-      });
-    } else {
-      setState(() {
-        totalSeconds = totalSeconds - 1;
-      });
-    }
+  void waitForWebtoons() async {
+    webtoons = await ApiService.getTodaysTonns();
+    isLoading = false;
+    setState(() {}); // 화면 갱신
   }
 
-  void onStartPressed() {
-    timer = Timer.periodic(const Duration(seconds: 1), onTick);
-    setState(() {
-      isRunning = true;
-    });
-  }
-
-  void onPausePressed() {
-    timer.cancel();
-    setState(() {
-      isRunning = false;
-    });
-  }
-
-  String format(int seconds) {
-    var duration = Duration(seconds: seconds);
-    return duration.toString().split('.').first.substring(2, 7);
+  @override
+  void initState() {
+    super.initState();
+    waitForWebtoons();
   }
 
   @override
   Widget build(BuildContext context) {
+    print(webtoons);
+    print(isLoading);
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Column(
-        children: [
-          Flexible(
-            flex: 1,
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              child: Text(
-                format(totalSeconds),
-                style: TextStyle(
-                  color: Theme.of(context).cardColor,
-                  fontSize: 89,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-          Flexible(
-            flex: 3,
-            child: Container(
-              child: Center(
-                child: IconButton(
-                  iconSize: 120,
-                  color: Theme.of(context).cardColor,
-                  onPressed: isRunning ? onPausePressed : onStartPressed,
-                  icon: Icon(
-                    isRunning
-                        ? Icons.pause_circle_outlined
-                        : Icons.play_circle_outlined,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Flexible(
-            flex: 1,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Pomodors",
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Theme.of(
-                                context,
-                              ).textTheme.displayLarge?.color,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            "$totalPomodors",
-                            style: TextStyle(
-                              fontSize: 58,
-                              color: Theme.of(
-                                context,
-                              ).textTheme.displayLarge?.color,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 2,
+        foregroundColor: Colors.green,
+        backgroundColor: Colors.white,
+        title: const Text(
+          "오늘의 웹툰",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
